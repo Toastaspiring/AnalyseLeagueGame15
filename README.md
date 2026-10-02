@@ -8,8 +8,8 @@ de l'équipe bleue, avec uniquement des informations disponibles en direct (over
 ## Démarrage rapide
 
 ```bash
-git clone <url-du-depot>
-cd lol_diamond_15min
+git clone https://github.com/Toastaspiring/AnalyseLeagueGame15.git
+cd AnalyseLeagueGame15
 python -m venv .venv
 # Windows (PowerShell) : .venv\Scripts\Activate.ps1    macOS / Linux : source .venv/bin/activate
 pip install -r requirements.txt
