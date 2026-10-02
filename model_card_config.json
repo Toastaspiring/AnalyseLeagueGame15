@@ -1,0 +1,201 @@
+{
+  "section_number": 8,
+  "seuil_surapprentissage": 0.005,
+  "criteres": [
+    {
+      "cle": "cv_log_loss",
+      "label": "Log loss en validation croisée",
+      "sens": "min",
+      "role": "critère principal de sélection",
+      "pourquoi": "La log loss pénalise une probabilité fausse, d'autant plus qu'elle est annoncée avec assurance : c'est ce qu'un spectateur voit sur l'overlay. Mesurée en validation croisée sur l'apprentissage seul, elle permet de choisir sans jamais regarder le test.",
+      "figures": []
+    },
+    {
+      "cle": "log_loss",
+      "label": "Log loss sur le test",
+      "sens": "min",
+      "role": "confirmation sur des parties nouvelles",
+      "pourquoi": "Même mesure sur les parties les plus récentes, jamais vues : elle vérifie que le choix fait en validation croisée tient sur des données futures.",
+      "figures": []
+    },
+    {
+      "cle": "brier",
+      "label": "Score de Brier",
+      "sens": "min",
+      "role": "qualité des probabilités",
+      "pourquoi": "Erreur quadratique moyenne entre la probabilité annoncée et l'issue (0 ou 1). Plus lisible que la log loss et moins sévère avec les erreurs extrêmes : un second regard sur les probabilités.",
+      "figures": []
+    },
+    {
+      "cle": "roc_auc",
+      "label": "AUC ROC",
+      "sens": "max",
+      "role": "capacité à classer les parties",
+      "pourquoi": "Probabilité que le modèle donne une probabilité plus haute à une partie gagnée par l'équipe bleue qu'à une partie perdue. Elle mesure le classement des parties, indépendamment du seuil et de la calibration.",
+      "figures": [
+        "04_roc.png"
+      ]
+    },
+    {
+      "cle": "average_precision",
+      "label": "AUC précision-rappel",
+      "sens": "max",
+      "role": "contrôle de cohérence",
+      "pourquoi": "Aire sous la courbe précision-rappel de la classe « victoire bleue ». Avec des classes équilibrées, elle raconte la même chose que l'AUC ROC : un désaccord signalerait un problème.",
+      "figures": [
+        "05_precision_rappel.png"
+      ]
+    },
+    {
+      "cle": "accuracy",
+      "label": "Exactitude (seuil 0,5)",
+      "sens": "max",
+      "role": "lisibilité",
+      "pourquoi": "Part des parties dont le vainqueur est bien prédit. Facile à communiquer, mais aveugle à la confiance des prédictions : critère secondaire pour un affichage en pourcentage.",
+      "figures": [
+        "07_matrice_confusion.png"
+      ]
+    },
+    {
+      "cle": "ece",
+      "label": "Erreur de calibration (ECE)",
+      "sens": "min",
+      "role": "fiabilité du pourcentage affiché",
+      "pourquoi": "Écart moyen entre la probabilité annoncée et la fréquence observée, par tranche de 10 %. Un overlay qui annonce 70 % doit avoir raison environ 7 fois sur 10.",
+      "figures": [
+        "06_prediction_vs_realite.png"
+      ]
+    },
+    {
+      "cle": "ecart_generalisation",
+      "label": "Écart de log loss entre test et apprentissage",
+      "sens": "diagnostic",
+      "role": "détection du surapprentissage",
+      "pourquoi": "Un modèle qui apprend par cœur est bien meilleur sur ses données d'apprentissage que sur des données nouvelles. Un écart supérieur au seuil fixé (0,005) est signalé comme surapprentissage.",
+      "figures": []
+    },
+    {
+      "cle": "predict_ms_per_1000",
+      "label": "Temps de prédiction (ms pour 1 000 parties)",
+      "sens": "min",
+      "role": "contrainte du direct",
+      "pourquoi": "L'overlay recalcule la probabilité en direct : le temps de calcul doit rester négligeable.",
+      "figures": []
+    },
+    {
+      "cle": "size_kb",
+      "label": "Taille du modèle sérialisé (Ko)",
+      "sens": "min",
+      "role": "facilité de déploiement",
+      "pourquoi": "Un petit modèle se charge vite et s'embarque facilement dans une application d'overlay.",
+      "figures": []
+    },
+    {
+      "cle": "interpretabilite",
+      "label": "Interprétabilité",
+      "sens": "qualitatif",
+      "role": "explication au public",
+      "pourquoi": "Pouvoir expliquer à un spectateur pourquoi le modèle annonce 70 % : quelles variables pèsent, et dans quel sens.",
+      "figures": []
+    }
+  ],
+  "arbitrage_test": "La sélection se fait en validation croisée pour ne pas ajuster le choix au jeu de test : une différence sur le test ne remet le choix en cause que si elle est significative et confirmée en validation croisée.",
+  "algorithmes": {
+    "reference": {
+      "nom": "Référence",
+      "principe": "Prédit toujours la fréquence de victoire bleue observée à l'apprentissage. Elle ne regarde pas la partie : c'est le niveau à battre.",
+      "interpretabilite": "sans objet",
+      "hyperparametres": {}
+    },
+    "logistique": {
+      "nom": "Régression logistique",
+      "principe": "Le modèle calcule un score linéaire, somme pondérée des écarts entre équipes (après standardisation), puis le transforme en probabilité par la fonction sigmoïde : P(victoire bleue) = 1 / (1 + exp(-(b0 + b1 x1 + ... + b5 x5))). Chaque coefficient dit de combien la cote de victoire bleue (P / (1 - P)) est multipliée quand l'écart correspondant augmente d'une unité, les autres écarts restant fixes. Entraînement : maximisation de la vraisemblance (minimisation de la log loss) par le solveur L-BFGS, avec une pénalité L2 sur les coefficients.",
+      "interpretabilite": "élevée : un coefficient lisible par variable",
+      "hyperparametres": {
+        "model__C": {
+          "nom": "C (inverse de la régularisation)",
+          "role": "Inverse de la force de la régularisation L2. Petit C : coefficients tirés vers 0 (modèle prudent). Grand C : presque pas de pénalité."
+        }
+      }
+    },
+    "gradient_boosting": {
+      "nom": "Gradient boosting",
+      "principe": "Une suite de petits arbres de décision, chacun corrigeant les erreurs des précédents. L'arrêt précoce stoppe l'ajout d'arbres quand la perte de validation ne baisse plus.",
+      "interpretabilite": "faible : des centaines d'arbres",
+      "hyperparametres": {
+        "learning_rate": {
+          "nom": "Taux d'apprentissage",
+          "role": "Poids de chaque nouvel arbre : petit = apprentissage lent mais plus stable."
+        },
+        "max_leaf_nodes": {
+          "nom": "Feuilles maximales par arbre",
+          "role": "Nombre maximal de feuilles par arbre : contrôle la complexité de chaque arbre."
+        },
+        "l2_regularization": {
+          "nom": "Régularisation L2",
+          "role": "Pénalité sur les valeurs des feuilles, contre le surapprentissage."
+        }
+      }
+    },
+    "foret_aleatoire": {
+      "nom": "Forêt aléatoire",
+      "principe": "Moyenne de 200 arbres de décision profonds, chacun entraîné sur un échantillon tiré au hasard des parties et des variables.",
+      "interpretabilite": "faible : 200 arbres profonds",
+      "hyperparametres": {
+        "max_depth": {
+          "nom": "Profondeur maximale",
+          "role": "Profondeur maximale de chaque arbre."
+        },
+        "min_samples_leaf": {
+          "nom": "Parties minimales par feuille",
+          "role": "Nombre minimal de parties par feuille : plus il est grand, plus les probabilités sont lissées."
+        }
+      }
+    },
+    "reseau_neurones": {
+      "nom": "Réseau de neurones (MLP)",
+      "principe": "Une ou deux couches cachées de neurones (activation ReLU) entre les variables et la probabilité, entraînées par descente de gradient (Adam) avec arrêt précoce.",
+      "interpretabilite": "faible : boîte noire",
+      "hyperparametres": {
+        "model__hidden_layer_sizes": {
+          "nom": "Neurones par couche cachée",
+          "role": "Nombre de neurones par couche cachée."
+        },
+        "model__alpha": {
+          "nom": "Alpha (pénalité L2)",
+          "role": "Pénalité L2 sur les poids."
+        },
+        "model__learning_rate_init": {
+          "nom": "Pas d'apprentissage initial",
+          "role": "Taille des pas de la descente de gradient."
+        }
+      }
+    }
+  },
+  "unites_variables": {
+    "ecart_eliminations": {
+      "unite": "1 élimination",
+      "facteur": 1
+    },
+    "ecart_cs": {
+      "unite": "10 sbires ou monstres",
+      "facteur": 10
+    },
+    "ecart_niveau": {
+      "unite": "1 niveau moyen",
+      "facteur": 1
+    },
+    "ecart_monstres_epiques": {
+      "unite": "1 monstre épique",
+      "facteur": 1
+    },
+    "ecart_tours": {
+      "unite": "1 tour",
+      "facteur": 1
+    },
+    "ecart_or": {
+      "unite": "1 000 pièces d'or",
+      "facteur": 1000
+    }
+  }
+}

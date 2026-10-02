@@ -1,0 +1,3 @@
+# Pour ouvrir et exécuter le notebook d'exploration (en plus de la chaîne)
+-r requirements.txt
+jupyterlab>=4

@@ -1,0 +1,172 @@
+{
+  "source": {
+    "default": "data/raw/dataset_43635.arff",
+    "name": "League-of-Legends-Diamond-Games-(First-15-Minutes)",
+    "openml_id": 43635,
+    "openml_version": 1,
+    "url": "https://www.openml.org/search?type=data&status=active&id=43635"
+  },
+  "datacard": {
+    "section_number": 8,
+    "z_threshold": 3.0,
+    "max_discrete_unique": 12,
+    "smd_threshold": 0.1
+  },
+  "target": "blue_win",
+  "target_labels": {
+    "0": "Victoire de l'équipe rouge",
+    "1": "Victoire de l'équipe bleue"
+  },
+  "id_columns": [
+    "matchId"
+  ],
+  "technical_columns": [
+    "Unnamed:_0"
+  ],
+  "columns": {
+    "Unnamed:_0": {
+      "description": "Numéro de ligne (0 à n-1) exporté avec les données par pandas. Aucune signification métier.",
+      "unit": ""
+    },
+    "matchId": {
+      "description": "Identifiant de la partie attribué par Riot Games (serveur NA1). Permet de retrouver la partie via l'API.",
+      "unit": ""
+    },
+    "blue_win": {
+      "description": "Résultat de la partie : 1 si l'équipe bleue a gagné, 0 si l'équipe rouge a gagné.",
+      "unit": ""
+    },
+    "blueGold": {
+      "description": "Or total accumulé par les 5 joueurs de l'équipe bleue à 15 minutes (or de départ compris).",
+      "unit": "pièces d'or"
+    },
+    "blueMinionsKilled": {
+      "description": "Sbires de voie tués par l'équipe bleue à 15 minutes.",
+      "unit": "sbires"
+    },
+    "blueJungleMinionsKilled": {
+      "description": "Monstres neutres de la jungle tués par l'équipe bleue à 15 minutes.",
+      "unit": "monstres"
+    },
+    "blueAvgLevel": {
+      "description": "Niveau moyen des 5 champions de l'équipe bleue à 15 minutes (un niveau va de 1 à 18).",
+      "unit": "niveau"
+    },
+    "blueChampKills": {
+      "description": "Champions adverses éliminés par l'équipe bleue avant 15 minutes.",
+      "unit": "éliminations"
+    },
+    "blueHeraldKills": {
+      "description": "Libellé d'origine : Hérauts de la Faille tués par l'équipe bleue. Sens probable d'après l'exploration : monstres épiques (dragons et Hérauts) tués avant 15 minutes.",
+      "unit": "monstres épiques"
+    },
+    "blueDragonKills": {
+      "description": "Libellé d'origine : dragons tués par l'équipe bleue avant 15 minutes. Toujours égal à 0 : colonne inexploitable (erreur d'extraction probable).",
+      "unit": "dragons"
+    },
+    "blueTowersDestroyed": {
+      "description": "Libellé d'origine : tours détruites. Sens réel d'après l'exploration : tours PERDUES par l'équipe bleue (détruites par l'équipe rouge) avant 15 minutes.",
+      "unit": "tours"
+    },
+    "redGold": {
+      "description": "Or total accumulé par les 5 joueurs de l'équipe rouge à 15 minutes (or de départ compris).",
+      "unit": "pièces d'or"
+    },
+    "redMinionsKilled": {
+      "description": "Sbires de voie tués par l'équipe rouge à 15 minutes.",
+      "unit": "sbires"
+    },
+    "redJungleMinionsKilled": {
+      "description": "Monstres neutres de la jungle tués par l'équipe rouge à 15 minutes.",
+      "unit": "monstres"
+    },
+    "redAvgLevel": {
+      "description": "Niveau moyen des 5 champions de l'équipe rouge à 15 minutes (un niveau va de 1 à 18).",
+      "unit": "niveau"
+    },
+    "redChampKills": {
+      "description": "Champions adverses éliminés par l'équipe rouge avant 15 minutes.",
+      "unit": "éliminations"
+    },
+    "redHeraldKills": {
+      "description": "Libellé d'origine : Hérauts de la Faille tués par l'équipe rouge. Sens probable d'après l'exploration : monstres épiques (dragons et Hérauts) tués avant 15 minutes.",
+      "unit": "monstres épiques"
+    },
+    "redDragonKills": {
+      "description": "Libellé d'origine : dragons tués par l'équipe rouge avant 15 minutes. Toujours égal à 0 : colonne inexploitable (erreur d'extraction probable).",
+      "unit": "dragons"
+    },
+    "redTowersDestroyed": {
+      "description": "Libellé d'origine : tours détruites. Sens réel d'après l'exploration : tours PERDUES par l'équipe rouge (détruites par l'équipe bleue) avant 15 minutes.",
+      "unit": "tours"
+    }
+  },
+  "rules": [
+    {
+      "name": "La cible vaut 0 ou 1",
+      "expr": "(blue_win == 0) | (blue_win == 1)",
+      "severity": "erreur",
+      "why": "blue_win est un indicateur binaire de victoire."
+    },
+    {
+      "name": "Identifiant de partie entier et positif",
+      "expr": "(matchId > 0) & (matchId % 1 == 0)",
+      "severity": "erreur",
+      "why": "Les identifiants de partie Riot sont des entiers positifs."
+    },
+    {
+      "name": "Au moins 2 500 pièces d'or par équipe",
+      "expr": "(blueGold >= 2500) & (redGold >= 2500)",
+      "severity": "erreur",
+      "why": "Chaque joueur commence la partie avec 500 pièces d'or, soit 2 500 par équipe."
+    },
+    {
+      "name": "Niveau moyen entre 1 et 18",
+      "expr": "(blueAvgLevel >= 1) & (blueAvgLevel <= 18) & (redAvgLevel >= 1) & (redAvgLevel <= 18)",
+      "severity": "erreur",
+      "why": "Le niveau d'un champion va de 1 à 18."
+    },
+    {
+      "name": "Niveau moyen multiple de 0,2",
+      "expr": "((blueAvgLevel * 5 + 0.01) % 1 < 0.02) & ((redAvgLevel * 5 + 0.01) % 1 < 0.02)",
+      "severity": "erreur",
+      "why": "Moyenne de 5 niveaux entiers : seules les valeurs k / 5 sont possibles."
+    },
+    {
+      "name": "Comptages positifs ou nuls",
+      "expr": "(blueMinionsKilled >= 0) & (redMinionsKilled >= 0) & (blueJungleMinionsKilled >= 0) & (redJungleMinionsKilled >= 0) & (blueChampKills >= 0) & (redChampKills >= 0)",
+      "severity": "erreur",
+      "why": "Un nombre de sbires ou d'éliminations ne peut pas être négatif."
+    },
+    {
+      "name": "Entre 0 et 11 tours par équipe",
+      "expr": "(blueTowersDestroyed >= 0) & (blueTowersDestroyed <= 11) & (redTowersDestroyed >= 0) & (redTowersDestroyed <= 11)",
+      "severity": "erreur",
+      "why": "Chaque équipe possède 11 tours."
+    },
+    {
+      "name": "Au plus 4 monstres épiques par partie avant 15 min",
+      "expr": "blueHeraldKills + redHeraldKills <= 4",
+      "severity": "erreur",
+      "why": "Règles de 2020 : au plus 2 dragons (apparition à 5:00, retour 5 min après la mort) et 2 Hérauts (apparition à 8:00, retour 6 min après) avant 15:00."
+    },
+    {
+      "name": "Au plus 2 Hérauts par partie avant 15 min (libellé d'origine)",
+      "expr": "blueHeraldKills + redHeraldKills <= 2",
+      "severity": "alerte",
+      "why": "Si la colonne ne comptait que les Hérauts, elle ne dépasserait jamais 2 par partie. Beaucoup de violations signalent un libellé trompeur."
+    },
+    {
+      "name": "Au moins un dragon tué avant 15 min",
+      "expr": "blueDragonKills + redDragonKills >= 1",
+      "severity": "alerte",
+      "why": "En Diamant, le premier dragon (5:00) est presque toujours tué avant 15:00. Une violation massive signale une colonne dragons défaillante."
+    },
+    {
+      "name": "Niveau moyen d'au moins 7 à 15 min",
+      "expr": "(blueAvgLevel >= 7) & (redAvgLevel >= 7)",
+      "severity": "alerte",
+      "why": "Un niveau moyen plus bas suggère un joueur absent ou déconnecté (partie anormale)."
+    }
+  ]
+}

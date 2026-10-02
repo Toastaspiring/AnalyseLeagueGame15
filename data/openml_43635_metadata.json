@@ -1,0 +1,20 @@
+{
+  "id": "43635",
+  "name": "League-of-Legends-Diamond-Games-(First-15-Minutes)",
+  "version": "1",
+  "description": "Context\nInspired by the following dataset , we have a collection of data on the first 15 minutes of about 50000 Diamond ranked League of Legends matches scraped using Riot's API. \nCan you predict their outcomes?\nContent\nData\nAll matches were collected with the following parameters:\nSeason: 13\nServer: NA1\nRank: Diamond\nTier: I,II,III,IV\nAcknowledgements\nThank you to Riot Games for allowing access to their API.\nInspiration\nWhen working on the linked dataset above, we see classification accuracy peak around 70. Given that we have 5 times the amount of data, I wanted to explore how this would improve our results.",
+  "description_version": "1",
+  "format": "arff",
+  "collection_date": "31-07-2020",
+  "upload_date": "2022-03-24T00:55:07",
+  "language": "English",
+  "licence": "CC0: Public Domain",
+  "url": "https://openml.org/data/v1/download/22102460/League-of-Legends-Diamond-Games-(First-15-Minutes).arff",
+  "parquet_url": "https://data.openml.org/datasets/0004/43635/dataset_43635.pq",
+  "file_id": "22102460",
+  "version_label": "v1.0",
+  "visibility": "public",
+  "status": "active",
+  "processing_date": "2022-03-24 00:55:53",
+  "md5_checksum": "e717b2ddbc4160b17253a1e8a8296bc7"
+}

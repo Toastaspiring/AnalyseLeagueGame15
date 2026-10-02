@@ -1,0 +1,20 @@
+# Environnement Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Fichiers produits par la chaîne : régénérés en local, jamais versionnés
+# (seules les données d'entrée de data/raw/ sont dans le dépôt)
+data/clean/
+models/
+reports/
+figures/
+outputs/
+DATACARD.md
+LINEAGE.md
+MODEL_CARD.md
+
+# Fichiers temporaires de Word
+~$*

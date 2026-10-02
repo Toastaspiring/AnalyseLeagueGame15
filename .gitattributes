@@ -1,0 +1,8 @@
+# Fins de ligne normalisées pour le code et les textes
+* text=auto
+
+# Fichiers à conserver octet pour octet (sinon la somme MD5 des données d'entrée change sous Windows)
+*.arff binary
+*.docx binary
+*.dotx binary
+*.png binary
